@@ -448,6 +448,16 @@ inline void clean(std::string &str) {
   }
 }
 
+inline std::string subbits(int v,int st,int len){
+  std::string res;
+  res.resize(len,'0');
+  for(int i=st;i<st+len;i++) {
+    if( v & (1 << i) ){
+      res[i-st] = '1';
+    }
+  }
+  return res;
+}
 
 /*
  *

@@ -19,10 +19,12 @@ void Model::save(std::ostream & ofs) {
   unsigned labels_offset    = 0;
   unsigned feature_offset   = 0;
   unsigned parameter_offset = 0;
+  unsigned clusters_offset = 0;
 
   write_uint(ofs, 0); //  the label offset
   write_uint(ofs, 0); //  the features offset
   write_uint(ofs, 0); //  the parameter offset
+  write_uint(ofs, 0); //  the clusters offset
 
   labels_offset = ofs.tellp();
   labels.dump(ofs);
@@ -33,10 +35,14 @@ void Model::save(std::ostream & ofs) {
   parameter_offset = ofs.tellp();
   param.dump(ofs);
 
+  clusters_offset = ofs.tellp();
+  clusters.dump(ofs);
+
   ofs.seekp(off);
   write_uint(ofs, labels_offset);
   write_uint(ofs, feature_offset);
   write_uint(ofs, parameter_offset);
+  write_uint(ofs, clusters_offset);
 }
 
 bool Model::load(std::istream & ifs) {
@@ -50,6 +56,7 @@ bool Model::load(std::istream & ifs) {
   unsigned labels_offset    = read_uint(ifs);
   unsigned feature_offset   = read_uint(ifs);
   unsigned parameter_offset = read_uint(ifs);
+  unsigned clusters_offset = read_uint(ifs);
 
   ifs.seekg(labels_offset);
   if (!labels.load(ifs)) {
@@ -65,6 +72,12 @@ bool Model::load(std::istream & ifs) {
   if (!param.load(ifs)) {
     return false;
   }
+
+  ifs.seekg(clusters_offset);
+  if (!clusters.load(ifs)) {
+    return false;
+  }
+
 
   return true;
 }

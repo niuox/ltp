@@ -39,6 +39,7 @@ private:
    */
   void build_configuration(void);
 
+  void build_cluster(const char * cluster_file = NULL);
   /*
    * build the feature space
    */

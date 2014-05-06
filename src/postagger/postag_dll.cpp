@@ -36,9 +36,12 @@ public:
       std::vector<std::string> & tags) {
     ltp::postagger::Instance * inst = new ltp::postagger::Instance;
     ltp::postagger::Decoder deco(model->num_labels());
-
+    int value;
     for (int i = 0; i < words.size(); ++ i) {
       inst->forms.push_back(ltp::strutils::chartypes::sbc2dbc_x(words[i]));
+      value = 0;
+      model->clusters.get((inst->forms[i]).c_str(), value);
+      inst->word_cluster[i] = value;
     }
 
     int len = inst->forms.size();

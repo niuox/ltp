@@ -79,6 +79,7 @@ Postagger::parse_cfg(ltp::utility::ConfigParser & cfg) {
 
   train_opt.train_file             = "";
   train_opt.holdout_file           = "";
+  train_opt.cluster_file           = "";
   train_opt.algorithm              = "pa";
   train_opt.model_name             = "";
   train_opt.max_iter               = 10;
@@ -101,6 +102,12 @@ Postagger::parse_cfg(ltp::utility::ConfigParser & cfg) {
     } else {
       ERROR_LOG("holdout-file config item is not found.");
       return false;
+    }
+
+    if (cfg.get("train", "cluster-file", strbuf)) {
+      train_opt.cluster_file = strbuf;
+    } else {
+      WARNING_LOG("cluster-file config item is not found.");
     }
 
     if (cfg.get("train", "algorithm", strbuf)) {
@@ -203,11 +210,53 @@ Postagger::build_configuration(void) {
   for (int i = 0; i < train_dat.size(); ++ i) {
     Instance * inst = train_dat[i];
     int len = inst->size();
+    int value;
     inst->tagsidx.resize(len);
+    inst->word_cluster.resize(len);
     for (int j = 0; j < len; ++ j) {
       inst->tagsidx[j] = model->labels.push( inst->tags[j] );
+      value = 0;
+      model->clusters.get((inst->forms[j]).c_str(), value);
+      inst->word_cluster[j] = value;
     }
+
   }
+}
+
+void
+Postagger::build_cluster(const char * cluster_file) {
+  if(cluster_file == NULL){
+    return;
+  }
+  std::ifstream ifs(cluster_file);
+  if (!ifs) {
+    return;
+  }
+  std::string line;
+  std::vector<std::string> parts;
+  int value_size;
+  int value;
+  while( std::getline(ifs,line) ) {
+    line = ltp::strutils::chomp(line);
+    if(line.size() == 0) {
+      continue;
+    }
+    parts = ltp::strutils::split(line);
+    if(parts.size() != 2) {
+      continue;
+    }
+    parts[1] = strutils::chartypes::sbc2dbc_x( parts[1] );
+    value = 0;
+    value_size = parts[0].size();
+    value |= (value_size << 24);
+    for(int i=0;i<value_size;i++) {
+      if( parts[0][i] == '1' ) {
+        value |= (1<<i);
+      }
+    }
+    model->clusters.set( parts[1].c_str(), value );
+  }
+
 }
 
 void
@@ -503,11 +552,11 @@ Postagger::train(void) {
       TRACE_LOG("Training iteraition [%d]", (iter + 1));
       for (int i = 0; i < train_dat.size(); ++ i) {
         // extract_features(train_dat[i]);
-
+        std::cout<<"niuox-s"<<std::endl;
         Instance * inst = train_dat[i];
         calculate_scores(inst, false);
         decoder->decode(inst);
-
+        std::cout<<"niuox-e"<<std::endl;
         if (inst->features.dim() == 0) {
           collect_features(inst, inst->tagsidx, inst->features);
         }
@@ -619,9 +668,14 @@ Postagger::evaluate(double &p) {
 
   while ((inst = reader.next())) {
     int len = inst->size();
+    int value;
     inst->tagsidx.resize(len);
+    inst->word_cluster.resize(len);
     for (int i = 0; i < len; ++ i) {
       inst->tagsidx[i] = model->labels.index(inst->tags[i]);
+      value = 0;
+      model->clusters.get((inst->forms[i]).c_str(), value);
+      inst->word_cluster[i] = value;
     }
 
     extract_features(inst, false);
@@ -688,9 +742,14 @@ Postagger::test(void) {
 
   while ((inst = reader.next())) {
     int len = inst->size();
+    int value;
     inst->tagsidx.resize(len);
+    inst->word_cluster.resize(len);
     for (int i = 0; i < len; ++ i) {
       inst->tagsidx[i] = model->labels.index(inst->tags[i]);
+      value = 0;
+      model->clusters.get((inst->forms[i]).c_str(), value);
+      inst->word_cluster[i] = value;
     }
 
     inst->postag_constrain.resize(len);
