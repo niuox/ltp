@@ -28,7 +28,10 @@ public:
       return false;
     }
 
-    ltp::postagger::load_constrain(model,lexicon_file);
+    if (ltp::postagger::load_constrain(model,lexicon_file) < 0) {
+      return false;
+    }
+
     return true;
   }
 
@@ -60,7 +63,6 @@ public:
         inst->postag_constrain[i].allsetones();
       }
     }
-
 
     ltp::postagger::Postagger::extract_features(inst);
     ltp::postagger::Postagger::calculate_scores(inst, true);

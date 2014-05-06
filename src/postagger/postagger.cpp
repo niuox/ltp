@@ -212,9 +212,11 @@ Postagger::build_configuration(void) {
     int len = inst->size();
     int value;
     inst->tagsidx.resize(len);
+    inst->postag_constrain.resize(len);
     inst->word_cluster.resize(len);
     for (int j = 0; j < len; ++ j) {
       inst->tagsidx[j] = model->labels.push( inst->tags[j] );
+      inst->postag_constrain[j].allsetones();
       value = 0;
       model->clusters.get((inst->forms[j]).c_str(), value);
       inst->word_cluster[j] = value;
@@ -552,11 +554,9 @@ Postagger::train(void) {
       TRACE_LOG("Training iteraition [%d]", (iter + 1));
       for (int i = 0; i < train_dat.size(); ++ i) {
         // extract_features(train_dat[i]);
-        std::cout<<"niuox-s"<<std::endl;
         Instance * inst = train_dat[i];
         calculate_scores(inst, false);
         decoder->decode(inst);
-        std::cout<<"niuox-e"<<std::endl;
         if (inst->features.dim() == 0) {
           collect_features(inst, inst->tagsidx, inst->features);
         }
@@ -670,8 +670,10 @@ Postagger::evaluate(double &p) {
     int len = inst->size();
     int value;
     inst->tagsidx.resize(len);
+    inst->postag_constrain.resize(len);
     inst->word_cluster.resize(len);
     for (int i = 0; i < len; ++ i) {
+      inst->tagsidx[i] = model->labels.index(inst->tags[i]);
       inst->tagsidx[i] = model->labels.index(inst->tags[i]);
       value = 0;
       model->clusters.get((inst->forms[i]).c_str(), value);

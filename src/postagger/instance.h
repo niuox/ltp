@@ -68,7 +68,7 @@ public:
   std::vector< int >          predicted_tagsidx;
   std::vector< int >          word_cluster;
   //std::vector<Bitset>       internal_lexicon_match_state;
-  std::vector<Bitset>         postag_constrain;   /*< the postag constrain for decode */
+  std::vector< Bitset >       postag_constrain;   /*< the postag constrain for decode */
 
   math::SparseVec             features;           /*< the gold features */
   math::SparseVec             predicted_features; /*< the predicted features */

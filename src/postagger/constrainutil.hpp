@@ -14,12 +14,20 @@
 namespace ltp {
 namespace postagger {
 
-static int load_constrain(Model * model, const char * lexicon_file = NULL) {
-  if (NULL == lexicon_file) {
+/**
+ * Function for loading constrain from constrain file.
+ *
+ *  @param[in]  model             The model
+ *  @param[in]  constraints_file  The postag constrain file
+ *  @return     int               The number of constraints that are successfully
+ *                                loaded. If loading constraints failed, return -1
+ */
+static int load_constrain(Model * model, const char * constraints_file = NULL) {
+  if (NULL == constraints_file) {
     return -1;
   }
 
-  std::ifstream lfs(lexicon_file);
+  std::ifstream lfs(constraints_file);
   if (!lfs) {
     return -1;
   }
@@ -59,7 +67,7 @@ static int load_constrain(Model * model, const char * lexicon_file = NULL) {
               num_lines, tokens[i].c_str(), tokens[0].c_str());
         }
       } else {
-        WARNING_LOG("line %4d: postag %s not exist.",
+        WARNING_LOG("line %4d: postag \"%s\" not exist.",
             num_lines, tokens[i].c_str());
       }
     }
@@ -84,4 +92,4 @@ static int load_constrain(Model * model, const char * lexicon_file = NULL) {
 }
 }
 
-#endif
+#endif  //  end for __LTP_POSTAGGER_CONSTRAINUTIL_H__
