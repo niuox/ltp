@@ -35,8 +35,8 @@ Extractor::Extractor() {
   templates.push_back(new Template("6={c-1}-{c-0}"));
   templates.push_back(new Template("7={c-0}-{c+1}"));
   templates.push_back(new Template("8={c-1}-{c+1}"));
-  templates.push_back(new Template("9={cluster-1}"));
-  templates.push_back(new Template("10={cluster-0}"));
+  templates.push_back(new Template("9={cluster-0}"));
+  templates.push_back(new Template("10={cluster-1}"));
   templates.push_back(new Template("11={cluster+1}"));
   //templates.push_back(new Template("9={ct-1}"));
   //templates.push_back(new Template("10={ct-0}"));
@@ -110,30 +110,36 @@ int Extractor::extract1o(Instance * inst, int idx, std::vector< StringVec > & ca
   //current word cluster feature extractor
   bits_len = (inst->word_cluster[idx]) >> 24;
   if(bits_len != 0) {
+    //std::cout<<inst->forms[idx]<<" : "<<inst->word_cluster[idx]<<std::endl;
     bits_int = ( inst->word_cluster[idx] - (bits_len << 24 ) ) << (17 - bits_len);
     for(int j=2; j<=16; j+=2) {
-      data.set("cluster-0", strutils::subbits(bits_len,0,j) );
+      data.set("cluster-0", strutils::subbits(bits_int,16,j) );
       templates[N-5]->render(data, feat);
+      //std::cout<<feat<<std::endl;
       cache[N-5].push_back(feat);
     }
   }
   //prevent word cluster feature extractor
-  bits_len = (idx-1) < 0 ? 0 : (inst->word_cluster[idx-1]) >> 24;
+  bits_len = (idx-1) < 0 ? 0 : ((inst->word_cluster[idx-1]) >> 24);
   if(bits_len != 0) {
+    //std::cout<<inst->forms[idx-1]<<" : "<<inst->word_cluster[idx-1]<<std::endl;
     bits_int = ( inst->word_cluster[idx-1] - (bits_len << 24 ) ) << (17 - bits_len);
     for(int j=4; j<=12; j+=4) {
-      data.set("cluster-1", strutils::subbits(bits_len,0,j) );
+      data.set("cluster-1", strutils::subbits(bits_int,16,j) );
       templates[N-4]->render(data, feat);
+      //std::cout<<feat<<std::endl;
       cache[N-4].push_back(feat);
     }
   }
   //next word cluster feature extractor
-  bits_len = (idx+1) < 0 ? 0 : (inst->word_cluster[idx-1]) >> 24;
+  bits_len = (idx+1) >= len ? 0 : ((inst->word_cluster[idx+1]) >> 24);
   if(bits_len != 0) {
-    bits_int = ( inst->word_cluster[idx-1] - (bits_len << 24 ) ) << (17 - bits_len);
+    //std::cout<<inst->forms[idx+1]<<" : "<<inst->word_cluster[idx+1]<<std::endl;
+    bits_int = ( inst->word_cluster[idx+1] - (bits_len << 24 ) ) << (17 - bits_len);
     for(int j=4; j<=12; j+=4) {
-      data.set("cluster+1", strutils::subbits(bits_len,0,j) );
+      data.set("cluster+1", strutils::subbits(bits_int,16,j) );
       templates[N-3]->render(data, feat);
+      //std::cout<<feat<<std::endl;
       cache[N-3].push_back(feat);
     }
   }

@@ -253,11 +253,19 @@ Postagger::build_cluster(const char * cluster_file) {
     value |= (value_size << 24);
     for(int i=0;i<value_size;i++) {
       if( parts[0][i] == '1' ) {
-        value |= (1<<i);
+        value |= (1<<(value_size-1-i));
       }
     }
     model->clusters.set( parts[1].c_str(), value );
   }
+  /*for(SmartMap<int>::const_iterator it = (model->clusters).begin();it != (model->clusters).end() ; ++ it) {
+    int value = (*( it.value() ) );
+    int len = value >> 24;
+    int bits_int = (value - (len << 24)) << (17-len);
+    std::string pp = strutils::subbits(bits_int,16,17);
+    std::cout<<len<<"\t"<<pp<<"\t"<<it.key()<<std::endl;
+  }*/
+
 
 }
 
@@ -510,6 +518,9 @@ Postagger::train(void) {
   TRACE_LOG("Read in [%d] instances.", train_dat.size());
 
   model = new Model;
+  TRACE_LOG("Start build cluster");
+  build_cluster(train_opt.cluster_file.c_str());
+  TRACE_LOG("Build cluster is done.");
   // build tag dictionary, map string tag to index
   TRACE_LOG("Start build configuration");
   build_configuration();
@@ -674,7 +685,7 @@ Postagger::evaluate(double &p) {
     inst->word_cluster.resize(len);
     for (int i = 0; i < len; ++ i) {
       inst->tagsidx[i] = model->labels.index(inst->tags[i]);
-      inst->tagsidx[i] = model->labels.index(inst->tags[i]);
+      inst->postag_constrain[i].allsetones();
       value = 0;
       model->clusters.get((inst->forms[i]).c_str(), value);
       inst->word_cluster[i] = value;
