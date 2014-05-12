@@ -35,9 +35,9 @@ Extractor::Extractor() {
   templates.push_back(new Template("6={c-1}-{c-0}"));
   templates.push_back(new Template("7={c-0}-{c+1}"));
   templates.push_back(new Template("8={c-1}-{c+1}"));
-  templates.push_back(new Template("9={cluster-0}"));
-  templates.push_back(new Template("10={cluster-1}"));
-  templates.push_back(new Template("11={cluster+1}"));
+  //templates.push_back(new Template("9={cluster-0}"));
+  //templates.push_back(new Template("10={cluster-1}"));
+  //templates.push_back(new Template("11={cluster+1}"));
   //templates.push_back(new Template("9={ct-1}"));
   //templates.push_back(new Template("10={ct-0}"));
   //templates.push_back(new Template("11={ct+1}"));
@@ -48,6 +48,17 @@ Extractor::Extractor() {
   //templates.push_back(new Template("11={ch-0,n}-{ch+1,0}"));
   templates.push_back(new Template("12={prefix}"));
   templates.push_back(new Template("13={suffix}"));
+
+  templates.push_back(new Template("14={cl-2}"));
+  templates.push_back(new Template("15={cl-1}"));
+  templates.push_back(new Template("16={cl-0}"));
+  templates.push_back(new Template("17={cl+1}"));
+  templates.push_back(new Template("18={cl+2}"));
+  templates.push_back(new Template("19={cl-1}-{cl-0}"));
+  templates.push_back(new Template("20={cl-0}-{cl+1}"));
+  templates.push_back(new Template("21={cl-1}-{cl+1}"));
+
+
   //templates.push_back(new Template("14={pos}"));
   //templates.push_back(new Template("14={ct-1}"));
   //templates.push_back(new Template("15={ct-0}"));
@@ -100,11 +111,12 @@ int Extractor::extract1o(Instance * inst, int idx, std::vector< StringVec > & ca
   feat.reserve(1024);
 
   int N = templates.size();
-  for (int i = 0; i < N - 5; ++ i) {
+  for (int i = 0; i < N - 10; ++ i) {
     templates[i]->render(data, feat);
     cache[i].push_back(feat);
   }
 
+  /*
   //cluster feature extractor
   int bits_len, bits_int;
   //current word cluster feature extractor
@@ -143,8 +155,8 @@ int Extractor::extract1o(Instance * inst, int idx, std::vector< StringVec > & ca
       cache[N-3].push_back(feat);
     }
   }
-
-  for (int i = N - 2; i < N; ++ i) {
+  */
+  for (int i = N - 10; i < N - 8; ++ i) {
     string prefix = "";
     string suffix = "";
     int num_chars = inst->chars[idx].size();
@@ -160,8 +172,19 @@ int Extractor::extract1o(Instance * inst, int idx, std::vector< StringVec > & ca
     }
   }
 
+  data.set( "cl-2",  (idx-2 < 0 ? BOS : strutils::getstr( inst->word_cluster[idx-2]) ) );
+  data.set( "cl-1",  (idx-1 < 0 ? BOS : strutils::getstr( inst->word_cluster[idx-1]) ) );
+  data.set( "cl-0",  strutils::getstr( inst->word_cluster[idx]) );
+  data.set( "cl+1",  (idx+1 >= len ? EOS : strutils::getstr( inst->word_cluster[idx+1]) ) );
+  data.set( "cl+2",  (idx+2 >= len ? EOS : strutils::getstr( inst->word_cluster[idx+2]) ) );
+  for (int i = N - 8; i < N; ++ i) {
+    templates[i]->render(data, feat);
+    cache[i].push_back(feat);
+  }
+
   return 0;
 }
 
 }     //  end for namespace postagger
 }     //  end for namespace ltp
+

@@ -459,6 +459,15 @@ inline std::string subbits(int v,int st,int len){
   return res;
 }
 
+inline std::string getstr(int val) {
+  int len = (val) >> 24;
+  if(len != 0) {
+    int bits_int = ( val - (len << 24 ) );
+    return subbits(bits_int, len-1,len);
+  }
+  return "null";
+}
+
 /*
  *
  *

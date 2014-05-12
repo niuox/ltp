@@ -503,6 +503,10 @@ Postagger::erase_rare_features(int * feature_group_updated_time) {
     }
   }
   TRACE_LOG("Building new model is done");
+
+  for (SmartMap<int>::const_iterator itx = model->clusters.begin(); itx != model->clusters.end() ;++ itx) {
+    new_model->clusters.set( itx.key(), (*(itx.value())) );
+  }
   return new_model;
 }
 
@@ -688,6 +692,7 @@ Postagger::evaluate(double &p) {
       inst->postag_constrain[i].allsetones();
       value = 0;
       model->clusters.get((inst->forms[i]).c_str(), value);
+      //std::cout<<"form = "<<inst->forms[i]<<"value = "<<value<<std::endl;
       inst->word_cluster[i] = value;
     }
 
@@ -769,7 +774,7 @@ Postagger::test(void) {
     if (model->external_lexicon.size() != 0) {
       for (int i = 0; i < len; ++ i) {
         Bitset * mask = model->external_lexicon.get((inst->forms[i]).c_str());
-        if (NULL == mask) {
+        if (NULL != mask) {
           inst->postag_constrain[i].merge((*mask));
         } else {
           inst->postag_constrain[i].allsetones();
